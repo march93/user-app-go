@@ -29,8 +29,16 @@ func ReturnUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("%v", w)
+	r.ParseForm()
+
+	for key, value := range r.Form {
+		fmt.Printf("%s = %s\n", key, value)
+	}
+
 	response := make(map[string]string)
 	response["message"] = "Logged in successfully"
+	// response := map[string]string{
+	// 	"Email": r.FormValue("Email"),
+	// }
 	render.JSON(w, r, response) // Return some demo response
 }
