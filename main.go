@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/render"
 	"../../Projects/user-app-go/auth"
 	"../../Projects/user-app-go/guests"
+	"../../Projects/user-app-go/watchlists"
 )
 
 func Routes() *chi.Mux {
@@ -24,6 +25,7 @@ func Routes() *chi.Mux {
 	router.Route("/v1", func(r chi.Router) {
 		r.Mount("/api/login", login.Routes())
 		r.Mount("/api/guests", guests.Routes())
+		r.Mount("/api/watchlists", watchlists.Routes())
 	})
 
 	return router

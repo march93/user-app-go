@@ -1,4 +1,4 @@
-package guests
+package watchlists
 
 import (
 	"fmt"
@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"encoding/json"
 
-	"../../../Projects/user-app-go/models/guests"
+	"../../../Projects/user-app-go/models/watchlists"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 )
 
-func parseJSON() []guestmodel.Guest {
+func parseJSON() []watchlistmodel.Watchlist {
 	// Open our jsonFile
 	jsonFile, err := os.Open("db.json")
 	// if we os.Open returns an error then handle it
@@ -28,33 +28,33 @@ func parseJSON() []guestmodel.Guest {
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 
 	// we initialize our Guests array
-	var guests guestmodel.Guests
+	var watchlists watchlistmodel.Watchlists
 
 	// we unmarshal our byteArray which contains our
 	// jsonFile's content into 'guests' which we defined above
-	json.Unmarshal(byteValue, &guests)
+	json.Unmarshal(byteValue, &watchlists)
 
 	// we iterate through every user within our users array and
 	// print out the user Type, their name, and their facebook url
 	// as just an example
-	for i := 0; i < len(guests.Guests); i++ {
-		fmt.Println("Guest ID: " + strconv.Itoa(guests.Guests[i].ID))
-		fmt.Println("Guest Name: " + guests.Guests[i].Name)
-		fmt.Println("Guest Date: " + strconv.Itoa(guests.Guests[i].Date))
-		fmt.Println("Guest Location: " + guests.Guests[i].Location)
+	for i := 0; i < len(watchlists.Watchlists); i++ {
+		fmt.Println("Guest ID: " + strconv.Itoa(watchlists.Watchlists[i].ID))
+		fmt.Println("Guest Name: " + watchlists.Watchlists[i].Name)
+		fmt.Println("Guest Email: " + watchlists.Watchlists[i].Email)
+		fmt.Println("Guest Notes: " + watchlists.Watchlists[i].Notes)
 	}
 
-	return guests.Guests
+	return watchlists.Watchlists
 }
 
 func Routes() *chi.Mux {
 	router := chi.NewRouter()
-	router.Get("/", ReturnGuests)
-	// router.Post("/", AddGuest)
+	router.Get("/", ReturnWatchlists)
+	// router.Post("/", AddToWatchlist)
 	return router
 }
 
-func ReturnGuests(w http.ResponseWriter, r *http.Request) {
-	guests := parseJSON()
-	render.JSON(w, r, guests)
+func ReturnWatchlists(w http.ResponseWriter, r *http.Request) {
+	watchlists := parseJSON()
+	render.JSON(w, r, watchlists)
 }
