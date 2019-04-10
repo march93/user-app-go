@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"encoding/json"
 
 	"../../../Projects/user-app-go/models/watchlists"
@@ -33,16 +32,6 @@ func parseJSON() []watchlistmodel.Watchlist {
 	// we unmarshal our byteArray which contains our
 	// jsonFile's content into 'guests' which we defined above
 	json.Unmarshal(byteValue, &watchlists)
-
-	// we iterate through every user within our users array and
-	// print out the user Type, their name, and their facebook url
-	// as just an example
-	for i := 0; i < len(watchlists.Watchlists); i++ {
-		fmt.Println("Guest ID: " + strconv.Itoa(watchlists.Watchlists[i].ID))
-		fmt.Println("Guest Name: " + watchlists.Watchlists[i].Name)
-		fmt.Println("Guest Email: " + watchlists.Watchlists[i].Email)
-		fmt.Println("Guest Notes: " + watchlists.Watchlists[i].Notes)
-	}
 
 	return watchlists.Watchlists
 }

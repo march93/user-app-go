@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"io/ioutil"
 	"os"
-	"strconv"
 	"encoding/json"
 
 	"../../../Projects/user-app-go/models/guests"
@@ -33,16 +32,6 @@ func parseJSON() []guestmodel.Guest {
 	// we unmarshal our byteArray which contains our
 	// jsonFile's content into 'guests' which we defined above
 	json.Unmarshal(byteValue, &guests)
-
-	// we iterate through every user within our users array and
-	// print out the user Type, their name, and their facebook url
-	// as just an example
-	for i := 0; i < len(guests.Guests); i++ {
-		fmt.Println("Guest ID: " + strconv.Itoa(guests.Guests[i].ID))
-		fmt.Println("Guest Name: " + guests.Guests[i].Name)
-		fmt.Println("Guest Date: " + strconv.Itoa(guests.Guests[i].Date))
-		fmt.Println("Guest Location: " + guests.Guests[i].Location)
-	}
 
 	return guests.Guests
 }
