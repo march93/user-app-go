@@ -1,2 +1,5 @@
 # Static JSON File
-.json
+*.json
+
+# ENV File
+.env

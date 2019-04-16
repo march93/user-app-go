@@ -7,10 +7,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
+	"github.com/joho/godotenv"
 	"../../Projects/user-app-go/auth"
 	"../../Projects/user-app-go/guests"
 	"../../Projects/user-app-go/invites"
 	"../../Projects/user-app-go/watchlists"
+	"../../Projects/user-app-go/pushnotifications"
 )
 
 func Routes() *chi.Mux {
@@ -28,12 +30,19 @@ func Routes() *chi.Mux {
 		r.Mount("/api/guests", guests.Routes())
 		r.Mount("/api/invites", invites.Routes())
 		r.Mount("/api/watchlists", watchlists.Routes())
+		r.Mount("/api/pushnotifications", pushnotifications.Routes())
 	})
 
 	return router
 }
 
 func main() {
+	// Load env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	router := Routes()
 
 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
