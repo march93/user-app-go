@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	firebase "firebase.google.com/go"
 	// "firebase.google.com/go/auth"
@@ -18,7 +17,9 @@ import (
 func Routes() *chi.Mux {
 	router := chi.NewRouter()
 	// router.Get("/", getEnv)
-	router.Post("/", sendMessage)
+	router.Post("/data", sendDataMessage)
+	router.Post("/notify", sendMessage)
+	router.Post("/subscribeToTopic", subscribeToTopic)
 	return router
 }
 
@@ -36,8 +37,9 @@ func initializeAppWithServiceAccount() *firebase.App {
 // 	render.JSON(w, r, serverKey)
 // }
 
-func sendMessage(w http.ResponseWriter, r *http.Request) {
+func sendDataMessage(w http.ResponseWriter, r *http.Request) {
 	app := initializeAppWithServiceAccount()
+	topic := "Notifications"
 
 	// Obtain a messaging.Client from the App.
 	ctx := context.Background()
@@ -46,20 +48,13 @@ func sendMessage(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("error getting Messaging client: %v\n", err)
 	}
 
-	// This registration token comes from the client FCM SDKs.
-	registrationToken := os.Getenv("REGISTRATION_TOKEN")
-
 	// See documentation on defining a message payload.
 	message := &messaging.Message{
-		Notification: &messaging.Notification{
-			Title: "WHAT'S COOKIN' HOMESLICE",
-			Body:  "PHP COOKBOOK",
-		},
 		Data: map[string]string{
-			"score": "850",
-			"time":  "2:45",
+			"title": "Por Favor",
+			"body":  "Venha na minhas festa",
 		},
-		Token: registrationToken,
+		Topic: topic,
 	}
 
 	// Send a message to the device corresponding to the provided
@@ -71,4 +66,69 @@ func sendMessage(w http.ResponseWriter, r *http.Request) {
 	}
 	// Response is a message ID string.
 	fmt.Println("Successfully sent message:", response)
+}
+
+func sendMessage(w http.ResponseWriter, r *http.Request) {
+	app := initializeAppWithServiceAccount()
+	topic := "Notifications"
+
+	// Obtain a messaging.Client from the App.
+	ctx := context.Background()
+	client, err := app.Messaging(ctx)
+	if err != nil {
+		log.Fatalf("error getting Messaging client: %v\n", err)
+	}
+
+	// See documentation on defining a message payload.
+	message := &messaging.Message{
+		Android: &messaging.AndroidConfig{
+			Priority: "high",
+		},
+		Notification: &messaging.Notification{
+			Title: "WHAT'S COOKIN' HOMESLICE",
+			Body:  "PHP COOKBOOK",
+		},
+		Data: map[string]string{
+			"title": "Hola",
+			"body":  "Senõr",
+		},
+		Topic: topic,
+	}
+
+	// Send a message to the device corresponding to the provided
+	// registration token.
+	response, err := client.Send(ctx, message)
+	render.JSON(w, r, response)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	// Response is a message ID string.
+	fmt.Println("Successfully sent message:", response)
+}
+
+func subscribeToTopic(w http.ResponseWriter, r *http.Request) {
+	app := initializeAppWithServiceAccount()
+
+	// Obtain a messaging.Client from the App.
+	ctx := context.Background()
+	client, err := app.Messaging(ctx)
+	topic := "Notifications"
+
+	r.ParseForm()
+	registrationTokens := []string{
+		r.FormValue("token"),
+	}
+	response, err := client.SubscribeToTopic(ctx, registrationTokens, topic)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// See the TopicManagementResponse reference documentation
+	// for the contents of response.
+	fmt.Println(response.SuccessCount, "tokens were subscribed successfully")
+
+	// response := make(map[string]bool)
+	// response["success"] = true
+
+	render.JSON(w, r, map[string]bool{"success": true})
 }
