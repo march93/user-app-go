@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	firebase "firebase.google.com/go"
-	// "firebase.google.com/go/auth"
 	"firebase.google.com/go/messaging"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
@@ -16,7 +15,6 @@ import (
 
 func Routes() *chi.Mux {
 	router := chi.NewRouter()
-	// router.Get("/", getEnv)
 	router.Post("/data", sendDataMessage)
 	router.Post("/notify", sendMessage)
 	router.Post("/subscribeToTopic", subscribeToTopic)
@@ -51,8 +49,9 @@ func sendDataMessage(w http.ResponseWriter, r *http.Request) {
 	// See documentation on defining a message payload.
 	message := &messaging.Message{
 		Data: map[string]string{
-			"title": "Por Favor",
-			"body":  "Venha na minhas festa",
+			"title":  "Por Favor",
+			"body":   "Venha na minhas festa",
+			"imgURL": "https://i.imgur.com/unYRmv9.jpg?1",
 		},
 		Topic: topic,
 	}
@@ -83,14 +82,19 @@ func sendMessage(w http.ResponseWriter, r *http.Request) {
 	message := &messaging.Message{
 		Android: &messaging.AndroidConfig{
 			Priority: "high",
+			Notification: &messaging.AndroidNotification{
+				Sound:     "default",
+				ChannelID: topic,
+			},
 		},
 		Notification: &messaging.Notification{
 			Title: "WHAT'S COOKIN' HOMESLICE",
 			Body:  "PHP COOKBOOK",
 		},
 		Data: map[string]string{
-			"title": "Hola",
-			"body":  "Senõr",
+			"title":  "Hola",
+			"body":   "Senõr",
+			"imgURL": "https://i.imgur.com/unYRmv9.jpg?1",
 		},
 		Topic: topic,
 	}
