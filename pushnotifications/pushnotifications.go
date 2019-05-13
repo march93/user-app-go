@@ -13,11 +13,12 @@ import (
 	"google.golang.org/api/option"
 )
 
+// Routes calls related to push notifications
 func Routes() *chi.Mux {
 	router := chi.NewRouter()
 	router.Post("/data", sendDataMessage)
-	router.Post("/notify", sendMessage)
 	router.Post("/subscribeToTopic", subscribeToTopic)
+	router.Post("/unsubscribeFromTopic", unsubscribeFromTopic)
 	return router
 }
 
@@ -30,14 +31,8 @@ func initializeAppWithServiceAccount() *firebase.App {
 	return app
 }
 
-// func getEnv(w http.ResponseWriter, r *http.Request) {
-// 	serverKey := os.Getenv("SERVER_KEY")
-// 	render.JSON(w, r, serverKey)
-// }
-
 func sendDataMessage(w http.ResponseWriter, r *http.Request) {
 	app := initializeAppWithServiceAccount()
-	topic := "Notifications"
 
 	// Obtain a messaging.Client from the App.
 	ctx := context.Background()
@@ -46,55 +41,43 @@ func sendDataMessage(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("error getting Messaging client: %v\n", err)
 	}
 
-	// See documentation on defining a message payload.
+	// Payload constants
+	topic := "Notifications"
+	title := "Androids Are The Best"
+	body := "iPhones Are Unholy"
+	imgURL := "https://i.imgur.com/4ABlT4r.jpg"
+	action := "Acknowledge"
+	guestID := "9"
+	guestName := "Shantell Crooks"
+	screen := "guestDetail"
+
 	message := &messaging.Message{
 		Data: map[string]string{
-			"title":  "Por Favor",
-			"body":   "Venha na minhas festa",
-			"imgURL": "https://i.imgur.com/unYRmv9.jpg?1",
+			"title":     title,
+			"body":      body,
+			"imgURL":    imgURL,
+			"action":    action,
+			"guestID":   guestID,
+			"guestName": guestName,
+			"screen":    screen,
 		},
-		Topic: topic,
-	}
-
-	// Send a message to the device corresponding to the provided
-	// registration token.
-	response, err := client.Send(ctx, message)
-	render.JSON(w, r, response)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	// Response is a message ID string.
-	fmt.Println("Successfully sent message:", response)
-}
-
-func sendMessage(w http.ResponseWriter, r *http.Request) {
-	app := initializeAppWithServiceAccount()
-	topic := "Notifications"
-
-	// Obtain a messaging.Client from the App.
-	ctx := context.Background()
-	client, err := app.Messaging(ctx)
-	if err != nil {
-		log.Fatalf("error getting Messaging client: %v\n", err)
-	}
-
-	// See documentation on defining a message payload.
-	message := &messaging.Message{
-		Android: &messaging.AndroidConfig{
-			Priority: "high",
-			Notification: &messaging.AndroidNotification{
-				Sound:     "default",
-				ChannelID: topic,
+		APNS: &messaging.APNSConfig{
+			Payload: &messaging.APNSPayload{
+				Aps: &messaging.Aps{
+					ContentAvailable: true,
+					Alert: &messaging.ApsAlert{
+						Title: title,
+						Body:  body,
+					},
+					CustomData: map[string]interface{}{
+						"imgURL":    imgURL,
+						"action":    action,
+						"guestID":   guestID,
+						"guestName": guestName,
+						"screen":    screen,
+					},
+				},
 			},
-		},
-		Notification: &messaging.Notification{
-			Title: "WHAT'S COOKIN' HOMESLICE",
-			Body:  "PHP COOKBOOK",
-		},
-		Data: map[string]string{
-			"title":  "Hola",
-			"body":   "Senõr",
-			"imgURL": "https://i.imgur.com/unYRmv9.jpg?1",
 		},
 		Topic: topic,
 	}
@@ -124,15 +107,40 @@ func subscribeToTopic(w http.ResponseWriter, r *http.Request) {
 	}
 	response, err := client.SubscribeToTopic(ctx, registrationTokens, topic)
 	if err != nil {
-		log.Fatalln(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, map[string]bool{"success": false})
+		return
 	}
 
 	// See the TopicManagementResponse reference documentation
 	// for the contents of response.
 	fmt.Println(response.SuccessCount, "tokens were subscribed successfully")
+	w.WriteHeader(http.StatusOK)
+	render.JSON(w, r, map[string]bool{"success": true})
+}
 
-	// response := make(map[string]bool)
-	// response["success"] = true
+func unsubscribeFromTopic(w http.ResponseWriter, r *http.Request) {
+	app := initializeAppWithServiceAccount()
 
+	// Obtain a messaging.Client from the App.
+	ctx := context.Background()
+	client, err := app.Messaging(ctx)
+	topic := "Notifications"
+
+	r.ParseForm()
+	registrationTokens := []string{
+		r.FormValue("token"),
+	}
+	response, err := client.UnsubscribeFromTopic(ctx, registrationTokens, topic)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		render.JSON(w, r, map[string]bool{"success": false})
+		return
+	}
+
+	// See the TopicManagementResponse reference documentation
+	// for the contents of response.
+	fmt.Println(response.SuccessCount, "tokens were unsubscribed successfully")
+	w.WriteHeader(http.StatusOK)
 	render.JSON(w, r, map[string]bool{"success": true})
 }
