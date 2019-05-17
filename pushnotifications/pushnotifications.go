@@ -69,6 +69,7 @@ func sendDataMessage(w http.ResponseWriter, r *http.Request) {
 						Title: title,
 						Body:  body,
 					},
+					Category: "NOTIFICATION_CATEGORY",
 					CustomData: map[string]interface{}{
 						"imgURL":    imgURL,
 						"action":    action,
@@ -76,6 +77,7 @@ func sendDataMessage(w http.ResponseWriter, r *http.Request) {
 						"guestName": guestName,
 						"screen":    screen,
 					},
+					MutableContent: true,
 				},
 			},
 		},
