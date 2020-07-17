@@ -23,7 +23,7 @@ func Routes() *chi.Mux {
 }
 
 func initializeAppWithServiceAccount() *firebase.App {
-	opt := option.WithCredentialsFile("guest-user-app-firebase-adminsdk-gi9qv-82f6209784.json")
+	opt := option.WithCredentialsFile("guest-mobile-dev-bda13-firebase-adminsdk-53xsi-eaa09a3e4e.json")
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		log.Fatalf("error initializing app: %v\n", err)
@@ -43,8 +43,8 @@ func sendDataMessage(w http.ResponseWriter, r *http.Request) {
 
 	// Payload constants
 	topic := "Notifications"
-	title := "Androids Are The Best"
-	body := "iPhones Are Unholy"
+	title := "Psst"
+	body := "Leave your laptop unlocked just for today"
 	imgURL := "https://i.imgur.com/4ABlT4r.jpg"
 	action := "Acknowledge"
 	guestID := "9"
